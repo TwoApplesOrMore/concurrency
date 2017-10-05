@@ -34,7 +34,7 @@ public class Buyer extends Thread {
     private void StayhomeAndThenGoToAutoRAI() throws InterruptedException {
         try {
             System.out.println(name + " Is sleeping");
-            Thread.sleep(RNG.nextInt(1)*1000);
+            Thread.sleep(RNG.nextInt(5)*1000);
         } catch (InterruptedException ie) {
             System.out.println("Thread " + name + " sleeping went wrong");
         }
@@ -43,7 +43,7 @@ public class Buyer extends Thread {
     private void lookAndBuyCar() {
         try {
             System.out.println(name + " Is buying a car");
-            Thread.sleep(RNG.nextInt(1)*500);
+            Thread.sleep(RNG.nextInt(5)*500);
         } catch (InterruptedException ie) {
             System.out.println("Thread " + name + " watching cars went wrong (This is not in monitor)");
         }

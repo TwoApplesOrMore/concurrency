@@ -1,6 +1,6 @@
 public class Main {
-    private static final int NR_OF_BUYERS = 10;
-    private static final int NR_OF_VISITORS = 15;
+    private static final int NR_OF_BUYERS = 7;
+    private static final int NR_OF_VISITORS = 20;
 
     public static void main(String[] args) {
         new Main().run();

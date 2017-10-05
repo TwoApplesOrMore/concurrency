@@ -33,7 +33,7 @@ public class Visitor extends Thread {
 
     private void StayhomeAndThenGoToAutoRAI() throws InterruptedException {
         try {
-            System.out.println(name + " Is sleeping");
+            System.out.println(name + " Is at home");
             Thread.sleep(RNG.nextInt(5)*1000);
         } catch (InterruptedException e) {
             System.out.println("Thread sleeping went wrong");

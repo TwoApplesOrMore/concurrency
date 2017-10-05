@@ -11,8 +11,6 @@ public class MonitorAutoRAI {
     private Lock lock;
     private Condition visitorplaceAvailable;
     private Condition buyerplaceAvailable;
-    private Condition lastBuyer;
-    private Condition lastVisitor;
 
     //integer to keep track of how many people are in
     private int nrOfVisitors = 0;
@@ -20,6 +18,7 @@ public class MonitorAutoRAI {
 
     private int buyersWaiting = 0;
     private int visitorsWaiting = 0;
+    private int visitorsFront = 0;
 
     private int successiveBuyers = 0;
 
@@ -27,14 +26,14 @@ public class MonitorAutoRAI {
         lock = new ReentrantLock();
         visitorplaceAvailable = lock.newCondition();
         buyerplaceAvailable = lock.newCondition();
-        lastBuyer = lock.newCondition();
-        lastVisitor = lock.newCondition();
+
     }
 
 
     /**
      * Generic entrance method, to streamline distribution of buyers and visitors
      * This function is NOT needed, but streamlines and makes things prettier
+     *
      * @param person Thread calling this method, either Buyer or Visitor
      */
     public void attend(Thread person) {
@@ -48,6 +47,7 @@ public class MonitorAutoRAI {
     /**
      * Generic method to create unity between Buyer and Visitor (Like attend)
      * Has the same function as the attend function, to streamline and distribute Buyers and Visitors
+     *
      * @param person
      */
     public void leave(Thread person) {
@@ -67,7 +67,7 @@ public class MonitorAutoRAI {
             // wait until allowed in
             buyersWaiting++;
             // make sure there are no other visitors or buyers
-            while(!noPeople()) {
+            while (!noPeople()) {
                 //place in que
                 buyerplaceAvailable.await();
 
@@ -76,9 +76,10 @@ public class MonitorAutoRAI {
             buyersWaiting--;
 
 
-            System.out.println("Buyer " + buyer.getThreadName() + " went inside as buyer");
+
 
             buyerInside = true;
+            System.out.println("Buyer " + buyer.getThreadName() + " went inside as buyer "+buyerInside);
             // go in
             // close all entrances for others
         } catch (Exception e) {
@@ -97,12 +98,19 @@ public class MonitorAutoRAI {
         try {
 
             // Leave room
-            System.out.println("Buyer " + buyer.getThreadName() + " has left the place");
+
             // check if the last of buyers, or #4
 
             // free room in monitor, and wake up queue depending on result
             buyerInside = false;
-            buyerplaceAvailable.signal();
+            System.out.println("Buyer " + buyer.getThreadName() + " has left the place " + buyerInside);
+            successiveBuyers++;
+            if (successiveBuyers >= 4) {
+                visitorsFront = visitorsWaiting;
+                visitorplaceAvailable.signal();
+            }else {
+                buyerplaceAvailable.signal();
+            }
 
         } catch (Exception e) {
             System.out.println("AttendAsBuyer crashed: " + e.toString());
@@ -119,8 +127,12 @@ public class MonitorAutoRAI {
         try {
             System.out.println("Visitor " + visitor.getThreadName() + " left the place");
             nrOfVisitors--;
-            visitorplaceAvailable.signal();
 
+            if(nrOfVisitors == 0 && successiveBuyers ==0){
+                buyerplaceAvailable.signal();
+            }else{
+                visitorplaceAvailable.signal();
+            }
             //
         } catch (Exception e) {
             System.out.println("AttendAsBuyer crashed: " + e.toString());
@@ -135,27 +147,33 @@ public class MonitorAutoRAI {
     private void attendAsVisitor(Visitor visitor) {
         lock.lock();
         try {
-
+            visitorsWaiting++;
             // wait until allowed in
-            while(!visitorAllowed()) {
-                buyerplaceAvailable.await();
+            while (!visitorAllowed()) {
+                visitorplaceAvailable.await();
+            }
+            visitorsWaiting--;
+            if (visitorsFront > 0) {
+                visitorsFront--;
+            } else if(visitorsFront <= 0) {
+                successiveBuyers = 0;
             }
             // add another visitor to keep track how many are in
             nrOfVisitors++;
             System.out.println("Visitor " + visitor.getThreadName() + " entered. People inside: " + nrOfVisitors);
             //
         } catch (Exception e) {
-            System.out.println("AttendAsBuyer crashed: " + e.toString());
+            System.out.println("AttendAsVisitor crashed: " + e.toString());
         } finally {
             lock.unlock();
         }
     }
 
-    private synchronized final boolean noPeople() {
-        return (!buyerInside && (nrOfVisitors==0));
+    private synchronized boolean noPeople() {
+        return (!buyerInside && nrOfVisitors == 0 && successiveBuyers < 4);
     }
 
-    private synchronized final boolean visitorAllowed() {
-        return (!buyerInside && (nrOfVisitors< PLACE_FOR_VISITORS));
+    private synchronized boolean visitorAllowed() {
+        return (!buyerInside && nrOfVisitors < PLACE_FOR_VISITORS && (buyersWaiting == 0 || successiveBuyers >= 4));
     }
 }

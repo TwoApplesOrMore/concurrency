@@ -10,6 +10,7 @@ public class MonitorAutoRAI {
     // lock and all conditions
     private Lock lock;
     private Condition visitorplaceAvailable;
+    private Condition visitorQueAvailable;
     private Condition buyerplaceAvailable;
 
     //integer to keep track of how many people are in
@@ -26,6 +27,7 @@ public class MonitorAutoRAI {
         lock = new ReentrantLock();
         visitorplaceAvailable = lock.newCondition();
         buyerplaceAvailable = lock.newCondition();
+        visitorQueAvailable = lock.newCondition();
 
     }
 
@@ -67,7 +69,7 @@ public class MonitorAutoRAI {
             // wait until allowed in
             buyersWaiting++;
             // make sure there are no other visitors or buyers
-            while (!noPeople()) {
+            while (!buyerAllowed()) {
                 //place in que
                 buyerplaceAvailable.await();
 
@@ -93,21 +95,19 @@ public class MonitorAutoRAI {
     /**
      * Called when a buyer wants to leave auto RAI
      */
-    public void leaveBuyer(Buyer buyer) {
+    private void leaveBuyer(Buyer buyer) {
         lock.lock();
         try {
 
-            // Leave room
-
-            // check if the last of buyers, or #4
 
             // free room in monitor, and wake up queue depending on result
             buyerInside = false;
-            System.out.println("Buyer " + buyer.getThreadName() + " has left the place " + buyerInside);
             successiveBuyers++;
-            if (successiveBuyers >= 4) {
+            System.out.println("Buyer " + buyer.getThreadName() + " has left the place succesive: "+ successiveBuyers);
+
+            if (successiveBuyers >= 4 || buyersWaiting == 0) {
                 visitorsFront = visitorsWaiting;
-                visitorplaceAvailable.signal();
+                visitorplaceAvailable.signalAll();
             }else {
                 buyerplaceAvailable.signal();
             }
@@ -128,7 +128,7 @@ public class MonitorAutoRAI {
             System.out.println("Visitor " + visitor.getThreadName() + " left the place");
             nrOfVisitors--;
 
-            if(nrOfVisitors == 0 && successiveBuyers ==0){
+            if(nrOfVisitors == 0 && successiveBuyers == 0){
                 buyerplaceAvailable.signal();
             }else{
                 visitorplaceAvailable.signal();
@@ -147,16 +147,25 @@ public class MonitorAutoRAI {
     private void attendAsVisitor(Visitor visitor) {
         lock.lock();
         try {
-            visitorsWaiting++;
+
             // wait until allowed in
+            while(visitorsFront > 0){
+                visitorQueAvailable.await();
+            }
+            visitorsWaiting++;
+
             while (!visitorAllowed()) {
+
                 visitorplaceAvailable.await();
             }
+
+
             visitorsWaiting--;
             if (visitorsFront > 0) {
                 visitorsFront--;
-            } else if(visitorsFront <= 0) {
+            } else {
                 successiveBuyers = 0;
+                visitorQueAvailable.signalAll();
             }
             // add another visitor to keep track how many are in
             nrOfVisitors++;
@@ -169,11 +178,11 @@ public class MonitorAutoRAI {
         }
     }
 
-    private synchronized boolean noPeople() {
-        return (!buyerInside && nrOfVisitors == 0 && successiveBuyers < 4);
+    private  boolean buyerAllowed() {
+        return (!buyerInside && nrOfVisitors == 0 && (successiveBuyers < 4 || visitorsWaiting == 0));
     }
 
-    private synchronized boolean visitorAllowed() {
+    private  boolean visitorAllowed() {
         return (!buyerInside && nrOfVisitors < PLACE_FOR_VISITORS && (buyersWaiting == 0 || successiveBuyers >= 4));
     }
 }

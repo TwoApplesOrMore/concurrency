@@ -25,6 +25,7 @@ public class Visitor extends Thread {
 
                 // leave
                 monitorAutoRAI.leave(this);
+
             } catch (InterruptedException e) {
                 System.out.println(name + " got interrupted trying to live");
             }

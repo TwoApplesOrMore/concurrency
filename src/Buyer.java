@@ -25,7 +25,7 @@ public class Buyer extends Thread {
 
                 // go home with car
                 monitorAutoRAI.leave(this);
-                
+
             } catch (InterruptedException e) {
                 System.out.println(name + " Got interrupted trying to live");
             }

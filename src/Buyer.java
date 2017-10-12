@@ -32,6 +32,10 @@ public class Buyer extends Thread {
         }
     }
 
+    /**
+     * Lets the current thread sleep for a random amount of time
+     * @throws InterruptedException
+     */
     private void StayhomeAndThenGoToAutoRAI() throws InterruptedException {
         try {
             System.out.println(name + " Is sleeping");
@@ -40,7 +44,10 @@ public class Buyer extends Thread {
             System.out.println("Thread " + name + " sleeping went wrong");
         }
     }
-
+    /**
+     * Lets the current thread sleep for a random amount of time
+     * @throws InterruptedException
+     */
     private void lookAndBuyCar() {
         try {
             System.out.println(name + " Is buying a car");

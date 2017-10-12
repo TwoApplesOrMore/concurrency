@@ -17,6 +17,7 @@ public class Buyer extends Thread {
             try {
                 // live, and then decide to go to autoRAI
                 StayhomeAndThenGoToAutoRAI();
+
                 //attend autoRAI
                 monitorAutoRAI.attend(this);
 
@@ -25,7 +26,6 @@ public class Buyer extends Thread {
 
                 // go home with car
                 monitorAutoRAI.leave(this);
-
             } catch (InterruptedException e) {
                 System.out.println(name + " Got interrupted trying to live");
             }
@@ -44,6 +44,7 @@ public class Buyer extends Thread {
             System.out.println("Thread " + name + " sleeping went wrong");
         }
     }
+
     /**
      * Lets the current thread sleep for a random amount of time
      * @throws InterruptedException
@@ -56,7 +57,6 @@ public class Buyer extends Thread {
             System.out.println("Thread " + name + " watching cars went wrong (This is not in monitor)");
         }
     }
-
 
     public String getThreadName() {
         return this.name;

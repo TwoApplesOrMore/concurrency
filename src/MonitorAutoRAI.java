@@ -34,6 +34,7 @@ public class MonitorAutoRAI {
 
     /**
      * Generic entrance method, to streamline distribution of buyers and visitors     *
+     *
      * @param person Thread calling this method, either Buyer or Visitor
      */
     public void attend(Thread person) {
@@ -46,6 +47,7 @@ public class MonitorAutoRAI {
 
     /**
      * Generic exit method, to streamline distribution of buyers and visitors
+     *
      * @param person Thread calling this method, either Buyer or Visitor
      */
     public void leave(Thread person) {
@@ -72,7 +74,7 @@ public class MonitorAutoRAI {
 
             buyerInside = true;
 
-            System.out.println("Buyer " + buyer.getThreadName() + " went inside as buyer "+buyerInside);
+            System.out.println("Buyer " + buyer.getThreadName() + " went inside as buyer " + buyerInside);
 
         } catch (Exception e) {
             System.out.println("AttendAsBuyer crashed: " + e.toString());
@@ -91,12 +93,12 @@ public class MonitorAutoRAI {
 
             buyerInside = false;
             successiveBuyers++;
-            System.out.println("Buyer " + buyer.getThreadName() + " has left the place successive: "+ successiveBuyers);
+            System.out.println("Buyer " + buyer.getThreadName() + " has left the place successive: " + successiveBuyers);
 
             if ((successiveBuyers >= 4 || buyersWaiting == 0) && visitorsWaiting > 0) {
                 visitorsFront = visitorsWaiting;
                 visitorplaceAvailable.signalAll();
-            }else {
+            } else {
                 buyerplaceAvailable.signal();
             }
 
@@ -116,9 +118,9 @@ public class MonitorAutoRAI {
             System.out.println("Visitor " + visitor.getThreadName() + " left the place");
             nrOfVisitors--;
 
-            if(nrOfVisitors == 0 && successiveBuyers == 0){
+            if (nrOfVisitors == 0 && successiveBuyers == 0) {
                 buyerplaceAvailable.signal();
-            }else{
+            } else {
                 visitorplaceAvailable.signal();
             }
             //
@@ -137,7 +139,7 @@ public class MonitorAutoRAI {
         try {
 
             // wait until allowed in
-            while(visitorsFront > 0){
+            while (visitorsFront > 0) {
                 visitorQueAvailable.await();
             }
             visitorsWaiting++;
@@ -168,16 +170,19 @@ public class MonitorAutoRAI {
 
     /**
      * Checks of a buyer is allowed inside
+     *
      * @return boolean access
      */
-    private  boolean buyerAllowed() {
+    private boolean buyerAllowed() {
         return (!buyerInside && nrOfVisitors == 0 && (successiveBuyers < 4 || visitorsWaiting == 0));
     }
+
     /**
      * Checks of a buyer is allowed inside
+     *
      * @return boolean access
      */
-    private  boolean visitorAllowed() {
+    private boolean visitorAllowed() {
         return (!buyerInside && nrOfVisitors < PLACE_FOR_VISITORS && (buyersWaiting == 0 || successiveBuyers >= 4));
     }
 }

@@ -1,5 +1,5 @@
 public class Main {
-    private static final int NR_OF_BUYERS = 3;
+    private static final int NR_OF_BUYERS = 10;
     private static final int NR_OF_VISITORS = 20;
 
     public static void main(String[] args) {

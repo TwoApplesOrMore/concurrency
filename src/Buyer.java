@@ -39,7 +39,7 @@ public class Buyer extends Thread {
     private void StayhomeAndThenGoToAutoRAI() throws InterruptedException {
         try {
             System.out.println(name + " Is sleeping");
-            Thread.sleep(RNG.nextInt(5)*1000);
+            Thread.sleep(RNG.nextInt(5)*500);
         } catch (InterruptedException ie) {
             System.out.println("Thread " + name + " sleeping went wrong");
         }
